@@ -1,22 +1,37 @@
+import dotenv from "dotenv";
 import express from "express";
-import dotenv from 'dotenv';
+import mongoose from "mongoose";
+import workoutRoutes from "./routes/workouts.js"; // Ensure to include the .js extension
 
+// Load environment variables from .env file
 dotenv.config();
-// express app
+
+// Create an Express app
 const app = express();
 
-// middleware
+// Middleware
+app.use(express.json());
+
+// Logger middleware
 app.use((req, res, next) => {
   console.log(req.path, req.method);
   next();
 });
 
-// routes
-app.get("/", (req, res) => {
-  res.json({ mssg: "Welcome to the app" });
-});
+// Routes
+app.use("/api/workouts", workoutRoutes);
 
-// listen for requests
-app.listen(process.env.PORT, () => {
-  console.log("listening on port", process.env.PORT);
-});
+// Connect to the database
+mongoose
+  .connect(process.env.MONGO_URI)
+  .then(() => {
+    console.log("Connected to database");
+    // Listen on the specified port
+    const PORT = process.env.PORT; // Default to 3000 if PORT is not set
+    app.listen(PORT, () => {
+      console.log("Listening for requests on port", PORT);
+    });
+  })
+  .catch((err) => {
+    console.log(err);
+  });
